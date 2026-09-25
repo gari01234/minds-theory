@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-<title>MINDS - Theory</title>
+<title>MINDS - Theory · v0.9</title>
 <style>
 :root{
   --bg:#efeee9; --paper:#faf9f5; --panel:#e7e6e0; --ink:#11110f; --muted:#72716b; --line:#c9c7bf;
@@ -43,20 +43,18 @@ header{grid-column:1/4;display:flex;align-items:center;gap:16px;padding:0 18px;b
 @media(max-width:1120px){#app{grid-template-columns:180px minmax(0,1fr) 300px}.hero{grid-template-columns:1fr}.grid3{grid-template-columns:1fr 1fr}.drawer{left:180px}}
 @media(max-width:840px){html,body{overflow:auto}#app{height:auto;min-height:100dvh;display:block}header{position:sticky;top:0}.left{display:none}.right{border-left:0;border-top:1px solid var(--line)}.center{overflow:visible}.grid2,.grid3{grid-template-columns:1fr}.drawer{inset:68px 0 0 0}.sub,.alive{display:none}.nav button{padding:8px 9px}.hero h1{font-size:31px}}
 </style>
-<link rel="stylesheet" href="v05.css"><link rel="stylesheet" href="v06.css"><link rel="stylesheet" href="v07.css"></head>
+<link rel="stylesheet" href="v05.css"><link rel="stylesheet" href="v06.css"><link rel="stylesheet" href="v07.css"><link rel="stylesheet" href="v08.css"><link rel="stylesheet" href="v09.css"></head>
 <body>
 <div id="app">
 <header>
   <div class="brand">MINDS - Theory</div>
-  <div class="sub">tercer cerebro · v0.7 · teoría viva</div>
+  <div class="sub">tercer cerebro · v0.8 · pensamiento vivo</div>
   <div class="spacer"></div>
   <div class="alive"><span class="pulse"></span> COGNITIVE FIELD ACTIVE</div>
   <div class="nav" id="topnav">
-    <button data-view="mind" class="active">PENSAMIENTO</button>
+    <button data-view="mind" class="active">MINDS</button>
     <button data-view="readings">LECTURAS</button>
-    <button data-view="memory">MEMORIA</button>
     <button data-view="ask">PREGUNTAR</button>
-    <button data-view="graph">TOPOLOGÍA</button>
   </div>
 </header>
 
@@ -260,5 +258,5 @@ document.getElementById('saveNote').onclick=()=>{savedNotes[state.selected]=docu
 
 renderThoughts();renderReturn();renderReadings();renderMemory();renderQuick();selectThought('means');
 </script>
-<script src="v05.js"></script><script src="v06.js"></script><script src="graph-data.js"></script><script src="v07.js"></script></body>
+<script src="v05.js"></script><script src="v06.js"></script><script src="graph-data.js"></script><script src="v07.js"></script><script src="v08.js"></script><script src="v09.js"></script></body>
 </html>

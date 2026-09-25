@@ -1,26 +1,55 @@
-# MINDS - Theory
+# MINDS - Theory v0.9
 
-Prototipo del “tercer cerebro” para construir teoría: una memoria intelectual activa que conserva lecturas, subrayados, anotaciones y evolución temporal, y que usa esa memoria como materia para producir pensamiento argumentado.
+v0.9 consolida la arquitectura del “tercer cerebro” antes de conectar Supabase y un modelo vivo.
 
-## Qué funciona en v0.7
+## Arquitectura de producto
 
-- **PENSAMIENTO:** superficie editorial con desarrollos largos. No es un dashboard de frases.
-- **LECTURAS:** textos recuperados, lectura a ancho cómodo, subrayado, notas por pasaje, navegación al fragmento y memoria local. En móvil aparece una barra inferior grande para subrayar, anotar, abrir notas y ajustar el tamaño de texto.
-- **MEMORIA:** episodios autobiográficos extensos con tus propios párrafos y el contexto de las respuestas, más acceso al origen completo.
-- **PREGUNTAR:** sigue siendo una demostración local hasta conectar Supabase + modelo.
-- **TOPOLOGÍA:** mapa navegable con zoom semántico. Lejos muestra territorios; al acercar aparecen autores, conceptos, hipótesis, obras, afirmaciones y relaciones.
-- **Responsive:** escritorio y móvil.
+La navegación principal tiene solo dos espacios de contenido:
 
-## Abrir localmente
+- **MINDS** — hilos de pensamiento vivos y longitudinales.
+- **LECTURAS** — textos, subrayados, notas, conversaciones y relectura.
 
-Mantén todos los archivos en la misma carpeta y abre `index.html` en Edge, Chrome, Firefox o Safari. Para uso real entre ordenador y móvil conviene publicarlo en GitHub Pages y después conectar Supabase.
+**Preguntar a MINDS** deja de ser una sección. Es una capacidad universal disponible desde el encabezado y desde cualquier selección de texto.
 
-## Datos actuales
+**MEMORIA** deja de ser una pestaña: es infraestructura transversal. **TOPOLOGÍA** permanece fuera de la navegación global; las conexiones se conservan como información contextual de cada hilo.
 
-`corpus.js` contiene las lecturas y conversaciones recuperadas. `graph-data.js` es una copia JavaScript de `graph.json` para que la topología funcione también al abrir el sitio localmente sin depender de `fetch()`.
+## MINDS
 
-Las anotaciones siguen guardándose temporalmente en `localStorage`. Esto significa que antes de Supabase una nota hecha en el ordenador no aparecerá automáticamente en el teléfono.
+Un hilo no es una entrada de blog. Conserva una formulación actual, procedencia, marcas, conversaciones y una biografía de versiones. La portada muestra solo los hilos que están “cerca ahora”. Los demás permanecen en **Archivo vivo** y pueden volver a aparecer en el futuro.
 
-## Supabase
+La distinción activo/latente no borra ni mueve destructivamente el hilo. En esta versión se preserva además la posibilidad de **Mantener cerca** un hilo de forma manual.
 
-La carpeta `supabase/` contiene el esquema preparado para persistencia real. No lo ejecutes hasta haber creado tu proyecto de Supabase; lo haremos después de publicar la web.
+## Conversaciones
+
+Toda pregunta queda guardada con su contexto de origen:
+
+- un hilo de MINDS;
+- un pasaje de una lectura;
+- una pregunta global.
+
+El icono de historial permite buscar y reabrir conversaciones antiguas. Una conversación no se convierte automáticamente en teoría aceptada.
+
+v0.9 migra localmente las conversaciones existentes de v0.8 cuando es posible.
+
+## LECTURAS
+
+Filtros disponibles:
+
+- Todo
+- Subrayados
+- Con notas
+- Conversaciones
+- Por volver
+- Relectura
+
+**Relectura** muestra los pasajes que el usuario decidió conservar, sus notas y accesos al contexto original. La selección contextual ofrece `Subrayar · Nota · Preguntar`.
+
+## Persistencia actual
+
+Todo sigue almacenado en `localStorage`. Por tanto, todavía no hay sincronización entre ordenador y teléfono. Supabase será la siguiente fase.
+
+Las respuestas de MINDS son todavía locales y provisionales: no hay un LLM conectado. La interfaz y el modelo de datos ya están preparados para sustituir esa capa por un motor seguro sin cambiar el recorrido de usuario.
+
+## Publicación en GitHub Pages
+
+Sube **todos** los archivos de esta carpeta al repositorio, sustituyendo la versión anterior. `index.html`, `v09.css` y `v09.js` deben quedar en la raíz junto a los demás archivos. GitHub Pages redeployará automáticamente después del commit.
