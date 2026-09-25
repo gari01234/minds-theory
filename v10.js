@@ -8,6 +8,7 @@
   const readJSON = (key, fallback) => { try { const v = JSON.parse(localStorage.getItem(key)); return v ?? fallback; } catch { return fallback; } };
   const sameJSON = (a,b) => { try { return JSON.stringify(a) === JSON.stringify(b); } catch { return false; } };
   const isUuid = s => /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(String(s||''));
+  const remoteUuid = id => isUuid(id) ? id : crypto.randomUUID();
   const now = () => new Date().toISOString();
   const KEYS = {
     readingAnnotations:'theorylab_v05_annotations',
@@ -281,9 +282,9 @@
   // ---------- reading annotations ----------
   async function pushReadingAnnotations({mirrorDeletes=true}={}){
     const local=readJSON(KEYS.readingAnnotations,[]);
-    const valid=local.filter(a=>isUuid(a.id) && a.segments?.[0]?.doc && state.docsByKey.has(a.segments[0].doc));
+    const valid=local.filter(a=>a?.segments?.[0]?.doc && state.docsByKey.has(a.segments[0].doc));
     const rows=valid.map(a=>({
-      id:a.id,user_id:state.user.id,document_id:state.docsByKey.get(a.segments[0].doc),
+      id:remoteUuid(a.id),user_id:state.user.id,document_id:state.docsByKey.get(a.segments[0].doc),
       kind:(a.note||'').trim()?'note':'highlight',quote:a.quote||'',note:a.note||'',
       selectors:{segments:a.segments||[]},
       metadata:{reading_id:a.reading||null,origin:a.origin||null,local_id:a.id},
@@ -299,7 +300,7 @@
   async function pullReadingAnnotations(){
     const {data,error}=await sb.from('annotations').select('*').order('created_at',{ascending:true});if(error)throw error;
     return (data||[]).map(a=>({
-      id:a.metadata?.local_id||a.id,
+      id:a.id,
       segments:a.selectors?.segments||[],
       quote:a.quote||'',note:a.note||'',created:a.created_at,updated:a.updated_at,
       reading:a.metadata?.reading_id||null,origin:a.metadata?.origin||null
@@ -309,9 +310,9 @@
   // ---------- MINDS annotations ----------
   async function pushMindAnnotations({mirrorDeletes=true}={}){
     const local=readJSON(KEYS.mindAnnotations,[]);
-    const valid=local.filter(a=>isUuid(a.id)&&state.threadsBySlug.has(a.threadId));
+    const valid=local.filter(a=>state.threadsBySlug.has(a.threadId));
     const rows=valid.map(a=>({
-      id:a.id,user_id:state.user.id,thread_id:state.threadsBySlug.get(a.threadId),
+      id:remoteUuid(a.id),user_id:state.user.id,thread_id:state.threadsBySlug.get(a.threadId),
       quote:a.quote||'',note:a.note||'',selectors:{segments:a.segments||[]},
       metadata:{local_id:a.id,thread_slug:a.threadId},
       created_at:a.created||now(),updated_at:a.updated||a.created||now()
@@ -326,7 +327,7 @@
   async function pullMindAnnotations(){
     const {data,error}=await sb.from('mind_annotations').select('*').order('created_at',{ascending:true});if(error)throw error;
     return (data||[]).map(a=>({
-      id:a.metadata?.local_id||a.id,
+      id:a.id,
       threadId:a.metadata?.thread_slug||state.threadSlugById.get(a.thread_id),
       segments:a.selectors?.segments||[],quote:a.quote||'',note:a.note||'',
       created:a.created_at,updated:a.updated_at
@@ -343,22 +344,23 @@
     return first?state.docsByKey.get(first)||null:null;
   }
   async function pushConversations(){
-    const local=readJSON(KEYS.conversations,[]).filter(c=>isUuid(c?.id));
+    const local=readJSON(KEYS.conversations,[]).filter(c=>c&&typeof c==='object');
     for(const c of local){
+      const remoteId=remoteUuid(c.id);
       const origin=c.origin||{type:'global',id:'global',label:'Pregunta global'};
       const originKind=origin.type==='mind'?'mind':origin.type==='reading'?'reading':'global';
       const row={
-        id:c.id,user_id:state.user.id,origin_kind:originKind,
+        id:remoteId,user_id:state.user.id,origin_kind:originKind,
         origin_thread_id:originKind==='mind'?state.threadsBySlug.get(origin.id)||null:null,
         origin_document_id:originKind==='reading'?resolveOriginDocument(origin):null,
         origin_anchor:origin,title:c.title||'Nueva conversación',mode:c.mode==='outside'?'outside':'memory',
-        metadata:{local_id:c.id},created_at:c.created||now(),updated_at:c.updated||c.created||now()
+        metadata:{local_id:c.id||null},created_at:c.created||now(),updated_at:c.updated||c.created||now()
       };
       if(originKind==='reading'&&!row.origin_document_id) continue;
       if(originKind==='mind'&&!row.origin_thread_id) continue;
       const {error}=await sb.from('conversations').upsert(row);if(error)throw error;
       const messages=(c.messages||[]).map((m,i)=>({
-        user_id:state.user.id,conversation_id:c.id,
+        user_id:state.user.id,conversation_id:remoteId,
         client_key:String(i).padStart(6,'0')+':'+String(m.at||''),
         role:m.role==='assistant'?'assistant':m.role==='system'?'system':'user',
         content:m.text||'',model:m.model||null,provisional:!!m.provisional,
@@ -366,7 +368,7 @@
         created_at:m.at||now()
       }));
       if(messages.length){
-        const {error:mErr}=await sb.from('conversation_messages').upsert(messages,{onConflict:'user_id,conversation_id,client_key'});
+        const {error:mErr}=await sb.from('conversation_messages').upsert(messages,{onConflict:'user_id,conversation_id,client_key',ignoreDuplicates:true});
         if(mErr)throw mErr;
       }
     }
@@ -382,7 +384,7 @@
       role:m.role,text:m.content,at:m.created_at,provisional:!!m.provisional,quote:m.metadata?.quote||'',model:m.model||undefined,citations:m.citations||[]
     });});
     return (convs||[]).map(c=>({
-      id:c.metadata?.local_id||c.id,
+      id:c.id,
       origin:c.origin_anchor&&Object.keys(c.origin_anchor).length?c.origin_anchor:{
         type:c.origin_kind,id:c.origin_kind==='mind'?state.threadSlugById.get(c.origin_thread_id):'global',
         label:c.origin_kind==='global'?'Pregunta global':c.origin_kind==='mind'?'MINDS':'Lectura'
