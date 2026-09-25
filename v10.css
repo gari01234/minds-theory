@@ -1,0 +1,50 @@
+/* MINDS - Theory v0.10 · persistence + auth */
+.v10-auth-button{
+  border:1px solid var(--line);background:transparent;border-radius:999px;
+  padding:9px 12px;font-size:9px;cursor:pointer;display:inline-flex;align-items:center;gap:7px
+}
+.v10-auth-button .v10-dot{width:7px;height:7px;border-radius:50%;background:#aaa9a2}
+.v10-auth-button.synced .v10-dot{background:var(--green);box-shadow:0 0 0 4px rgba(21,189,103,.08)}
+.v10-auth-button.pending .v10-dot{background:var(--amber)}
+.v10-auth-button.error .v10-dot{background:var(--red)}
+.v10-auth-dialog{
+  width:min(520px,calc(100vw - 28px));border:1px solid var(--line);background:var(--paper);
+  color:var(--ink);padding:0;box-shadow:var(--shadow)
+}
+.v10-auth-dialog::backdrop{background:rgba(17,17,15,.34);backdrop-filter:blur(5px)}
+.v10-auth-card{padding:22px}
+.v10-auth-head{display:flex;justify-content:space-between;gap:20px;align-items:flex-start}
+.v10-auth-head h2{font-size:26px;line-height:1.05;letter-spacing:-.045em;margin:5px 0 0}
+.v10-auth-close{border:1px solid var(--line);background:transparent;width:38px;height:38px;cursor:pointer;font-size:20px}
+.v10-auth-card p{font-size:10px;line-height:1.65;color:#4b4a45}
+.v10-auth-form{display:grid;grid-template-columns:1fr auto;gap:8px;margin-top:16px}
+.v10-auth-form input{border:1px solid var(--line);background:#fffefa;padding:12px;min-width:0}
+.v10-auth-form button,.v10-auth-primary{border:0;background:var(--ink);color:white;padding:11px 14px;cursor:pointer;font-size:9px;font-weight:700}
+.v10-auth-secondary{border:1px solid var(--line);background:transparent;padding:10px 12px;cursor:pointer;font-size:9px}
+.v10-auth-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+.v10-auth-state{border-top:1px solid var(--line);margin-top:16px;padding-top:14px}
+.v10-auth-state b{font-size:10px}
+.v10-auth-state span{display:block;font-size:9px;color:var(--muted);margin-top:3px}
+.v10-auth-message{font-size:9px;line-height:1.5;margin-top:12px;padding:9px 10px;background:#f0efe9;border-left:2px solid var(--line)}
+.v10-auth-message.ok{border-left-color:var(--green)}
+.v10-auth-message.warn{border-left-color:var(--amber)}
+.v10-auth-message.error{border-left-color:var(--red)}
+.v10-migration{
+  border:1px solid var(--green);padding:14px;margin-top:16px;background:rgba(21,189,103,.035)
+}
+.v10-migration h3{font-size:14px;margin:0 0 6px}
+.v10-migration p{margin:0 0 10px}
+.v10-sync-badge{
+  font:8px ui-monospace,monospace;color:var(--muted);letter-spacing:.08em;
+  display:inline-flex;align-items:center;gap:6px;margin-left:4px
+}
+.v10-sync-badge:before{content:"";width:6px;height:6px;border-radius:50%;background:#aaa9a2}
+.v10-sync-badge.synced:before{background:var(--green)}
+.v10-sync-badge.syncing:before{background:var(--amber)}
+.v10-sync-badge.error:before{background:var(--red)}
+@media(max-width:840px){
+  .v10-auth-button{padding:8px 10px}
+  .v10-auth-button span:not(.v10-dot){display:none}
+  .v10-auth-form{grid-template-columns:1fr}
+  .v10-auth-card{padding:18px}
+}
