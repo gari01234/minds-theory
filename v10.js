@@ -19,9 +19,9 @@
   };
   const WATCHED = new Set(Object.values(KEYS));
 
-  document.title = 'MINDS - Theory · v0.10';
+  document.title = 'MINDS - Readings · v0.10.1';
   const sub = document.querySelector('.sub');
-  if (sub) sub.textContent = 'tercer cerebro · v0.10 · memoria persistente';
+  if (sub) sub.textContent = '';
 
   const state = {
     session:null,
@@ -242,8 +242,8 @@
       const threadId=state.threadsBySlug.get(t.slug);
       if(!threadId || evented.has(threadId)) return;
       eventRows.push({user_id:state.user.id,thread_id:threadId,event_type:'created',reason:'Importado desde MINDS v0.9.1',source_refs:[{kind:'prototype',id:'v0.9.1'}]});
-      eventRows.push({user_id:state.user.id,thread_id:threadId,event_type:t.active?'activated':'deactivated',reason:t.active?'Cerca al iniciar la memoria persistente':'Importado como memoria latente'});
-      if(t.pinned) eventRows.push({user_id:state.user.id,thread_id:threadId,event_type:'pinned',reason:'Fijado en la memoria local'});
+      eventRows.push({user_id:state.user.id,thread_id:threadId,event_type:t.active?'activated':'deactivated',reason:t.active?'Cerca al iniciar la memoria persistente':'Importado como memoria latente',source_refs:[]});
+      if(t.pinned) eventRows.push({user_id:state.user.id,thread_id:threadId,event_type:'pinned',reason:'Fijado en la memoria local',source_refs:[]});
     });
     if(eventRows.length){
       const {error}=await sb.from('mind_thread_events').insert(eventRows);
