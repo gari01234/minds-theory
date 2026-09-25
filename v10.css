@@ -121,8 +121,8 @@ html,body,#app,.center,#view-mind,#view-readings{background:#fff!important}
 
 /* v0.10.2 — lighter identity */
 .brand{
-  font-weight:600!important;
-  letter-spacing:-.035em!important;
+  font-weight:500!important;
+  letter-spacing:-.025em!important;
 }
 .nav button.active,
 .v09-ask-button,
