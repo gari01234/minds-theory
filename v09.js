@@ -9,9 +9,9 @@
   const short=(s,n=74)=>String(s||'').trim().replace(/\s+/g,' ').slice(0,n)+(String(s||'').trim().replace(/\s+/g,' ').length>n?'…':'');
   const fmtDate=iso=>{try{return new Intl.DateTimeFormat('es',{day:'numeric',month:'short',year:'numeric'}).format(new Date(iso))}catch{return ''}};
 
-  document.title='MINDS - Theory';
+  document.title='MINDS - Theory · v0.9.1';
   document.querySelector('.brand')?.replaceChildren(document.createTextNode('MINDS - Theory'));
-  if(document.querySelector('.sub')) document.querySelector('.sub').textContent='tercer cerebro · v0.9 · memoria que vuelve';
+  if(document.querySelector('.sub')) document.querySelector('.sub').textContent='tercer cerebro · v0.9.1 · memoria que vuelve';
 
   // ---------- architecture: two places, one universal faculty ----------
   document.querySelectorAll('#topnav button').forEach(b=>{
@@ -300,12 +300,36 @@
   globalActions?.querySelector('[data-v09-history]')?.addEventListener('click',()=>openHistory('all'));
 
   // ---------- navigation ----------
-  const inheritedSetView=window.setView;
-  window.setView=function(v){if(!['mind','readings'].includes(v))v='mind';try{inheritedSetView?.(v)}catch{};document.querySelectorAll('.view').forEach(x=>x.classList.remove('active'));$('#view-'+v)?.classList.add('active');document.querySelectorAll('#topnav button').forEach(b=>b.classList.toggle('active',b.dataset.view===v));document.body.classList.toggle('mind-mode',v==='mind');if(v==='mind')renderMindsV09();else renderReadingsV09();};
-  document.querySelectorAll('#topnav button').forEach(b=>b.onclick=()=>window.setView(b.dataset.view));
+  function setViewV091(v){
+    if(!['mind','readings'].includes(v)) v='mind';
+
+    document.querySelectorAll('.view').forEach(el=>{
+      el.classList.remove('active');
+    });
+
+    const target=document.getElementById('view-'+v);
+    if(target) target.classList.add('active');
+
+    document.querySelectorAll('#topnav button').forEach(button=>{
+      button.classList.toggle('active',button.dataset.view===v);
+    });
+
+    document.body.classList.toggle('mind-mode',v==='mind');
+
+    if(v==='mind'){
+      renderMindsV09();
+    }else{
+      renderReadingsV09();
+    }
+  }
+
+  window.setView=setViewV091;
+  document.querySelectorAll('#topnav button').forEach(button=>{
+    button.onclick=()=>setViewV091(button.dataset.view);
+  });
 
   // Boot.
-  renderMindsV09();renderReadingsV09();window.setView('mind');
+  setViewV091('mind');
 
   window.MINDS_V09={
     get conversations(){return conversations},get annotations(){return mindAnnotations},get pins(){return [...pins]},
