@@ -1,55 +1,70 @@
-# MINDS - Theory v0.9
+# MINDS - Theory v0.10
 
-v0.9 consolida la arquitectura del “tercer cerebro” antes de conectar Supabase y un modelo vivo.
+MINDS - Theory es un prototipo de “tercer cerebro” para investigación teórica arquitectónica. La interfaz principal se organiza en dos lugares: **MINDS** y **LECTURAS**. **Preguntar a MINDS** funciona como una capacidad transversal.
 
-## Arquitectura de producto
+## Qué cambia en v0.10
 
-La navegación principal tiene solo dos espacios de contenido:
+v0.10 introduce memoria persistente con Supabase sin sustituir todavía el motor cognitivo local.
 
-- **MINDS** — hilos de pensamiento vivos y longitudinales.
-- **LECTURAS** — textos, subrayados, notas, conversaciones y relectura.
+- **Supabase pasa a ser la fuente de verdad** una vez que el usuario inicia sesión.
+- `localStorage` permanece como caché/offline bridge para conservar compatibilidad con v0.9.1.
+- La primera vez que se detecta memoria local y la cuenta remota está vacía, MINDS pide confirmación antes de migrarla.
+- Después de la migración, subrayados, notas, conversaciones, “Por volver” y hilos fijados se sincronizan entre dispositivos.
+- Los textos completos del corpus y los hilos actuales de MINDS se registran en Supabase con IDs persistentes.
+- Las conversaciones conservan su contexto de origen: global, hilo de MINDS o lectura/pasaje.
+- Las respuestas siguen siendo locales y provisionales: todavía no hay un LLM conectado.
 
-**Preguntar a MINDS** deja de ser una sección. Es una capacidad universal disponible desde el encabezado y desde cualquier selección de texto.
+## Arquitectura actual
 
-**MEMORIA** deja de ser una pestaña: es infraestructura transversal. **TOPOLOGÍA** permanece fuera de la navegación global; las conexiones se conservan como información contextual de cada hilo.
+### MINDS
 
-## MINDS
+Los pensamientos son hilos longitudinales, no entradas de blog. Cada hilo puede tener versiones, eventos de activación/reactivación, marcas y conversaciones. “Activo” y “latente” son estados derivados; nada se borra por dejar de estar cerca.
 
-Un hilo no es una entrada de blog. Conserva una formulación actual, procedencia, marcas, conversaciones y una biografía de versiones. La portada muestra solo los hilos que están “cerca ahora”. Los demás permanecen en **Archivo vivo** y pueden volver a aparecer en el futuro.
+### LECTURAS
 
-La distinción activo/latente no borra ni mueve destructivamente el hilo. En esta versión se preserva además la posibilidad de **Mantener cerca** un hilo de forma manual.
+Conserva los textos completos recuperados, subrayados, notas, conversaciones, “Por volver” y Relectura.
 
-## Conversaciones
+### Preguntar a MINDS
 
-Toda pregunta queda guardada con su contexto de origen:
+No es una sección principal. Puede invocarse globalmente o desde una selección de texto. Toda conversación queda guardada y trazable.
 
-- un hilo de MINDS;
-- un pasaje de una lectura;
-- una pregunta global.
+## Persistencia
 
-El icono de historial permite buscar y reabrir conversaciones antiguas. Una conversación no se convierte automáticamente en teoría aceptada.
+Frontend público:
 
-v0.9 migra localmente las conversaciones existentes de v0.8 cuando es posible.
+- GitHub Pages
+- `supabase-js` en el navegador
+- URL del proyecto + **publishable key** únicamente
 
-## LECTURAS
+Backend:
 
-Filtros disponibles:
+- Supabase Postgres
+- Auth
+- Row Level Security
+- esquema privado para futura recuperación semántica / embeddings
 
-- Todo
-- Subrayados
-- Con notas
-- Conversaciones
-- Por volver
-- Relectura
+Nunca deben guardarse en GitHub:
 
-**Relectura** muestra los pasajes que el usuario decidió conservar, sus notas y accesos al contexto original. La selección contextual ofrece `Subrayar · Nota · Preguntar`.
+- service-role / secret keys
+- claves de modelos de IA
+- contraseñas
+- secretos de Edge Functions
 
-## Persistencia actual
+## Auth
 
-Todo sigue almacenado en `localStorage`. Por tanto, todavía no hay sincronización entre ordenador y teléfono. Supabase será la siguiente fase.
+La interfaz usa inicio de sesión por email mediante Magic Link.
 
-Las respuestas de MINDS son todavía locales y provisionales: no hay un LLM conectado. La interfaz y el modelo de datos ya están preparados para sustituir esa capa por un motor seguro sin cambiar el recorrido de usuario.
+Para producción, en Supabase debe configurarse la URL del sitio:
 
-## Publicación en GitHub Pages
+`https://gari01234.github.io/minds-theory/`
 
-Sube **todos** los archivos de esta carpeta al repositorio, sustituyendo la versión anterior. `index.html`, `v09.css` y `v09.js` deben quedar en la raíz junto a los demás archivos. GitHub Pages redeployará automáticamente después del commit.
+y permitir esa misma URL como redirect de Auth.
+
+## Próxima fase
+
+Después de validar login + migración + sincronización en ordenador y móvil:
+
+1. conectar **Preguntar a MINDS** a una Edge Function con IA;
+2. implementar recuperación contextual sobre memoria propia;
+3. mantener separada la exploración “fuera de mi memoria”;
+4. construir el motor proactivo de MINDS para detectar conexiones, deuda epistémica, contradicciones y reactivación de memoria dormida sin convertir propuestas de IA en tesis aceptadas silenciosamente.
