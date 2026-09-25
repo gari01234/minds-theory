@@ -6,8 +6,9 @@ const authButton=$('#authButton'),status=$('#syncStatus');
 let user=null,syncing=false,timer=null,hydrating=false;
 const setStatus=t=>{if(status)status.textContent=t};
 const localDateTime=(date,time)=>new Date(date+'T'+(time||'09:00')+':00');
-const isoDate=d=>d.toISOString().slice(0,10);
-const timeOf=d=>String(d).slice(11,16);
+const pad=n=>String(n).padStart(2,'0');
+const isoDate=d=>`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+const timeOf=d=>`${pad(d.getHours())}:${pad(d.getMinutes())}`;
 function apiError(e){return e?.message||String(e||'Error desconocido')}
 async function init(){
   if(!sb||!app){setStatus('Memoria local · Supabase no disponible');if(authButton)authButton.textContent='Memoria local';return}
@@ -100,7 +101,7 @@ async function pullState(local,maps){
   if(te)throw te;if(ee)throw ee;if(me)throw me;
   const catKey=new Map(maps.cats.map(c=>[c.id,c.client_key])),projKey=new Map(maps.projs.map(p=>[p.id,p.client_key]));
   const remoteTasks=(tasks||[]).map(t=>({id:t.client_key||t.id,title:t.title,date:t.due_date,done:!!t.completed_at,completedAt:t.completed_at||null,categoryId:catKey.get(t.category_id)||'personal',projectId:projKey.get(t.project_id)||null,recurrence:t.recurrence||{},notes:t.notes||'',metadata:t.metadata||{}}));
-  const remoteEvents=(events||[]).map(e=>{const s=new Date(e.starts_at),en=new Date(e.ends_at);return{id:e.client_key||e.id,title:e.title,date:isoDate(s),start:timeOf(e.starts_at),duration:Math.max(1,Math.round((en-s)/60000)),allDay:!!e.all_day,categoryId:catKey.get(e.category_id)||'personal',projectId:projKey.get(e.project_id)||null,recurrence:e.recurrence||{},notes:e.notes||'',metadata:e.metadata||{}}});
+  const remoteEvents=(events||[]).map(e=>{const s=new Date(e.starts_at),en=new Date(e.ends_at);return{id:e.client_key||e.id,title:e.title,date:isoDate(s),start:timeOf(s),duration:Math.max(1,Math.round((en-s)/60000)),allDay:!!e.all_day,categoryId:catKey.get(e.category_id)||'personal',projectId:projKey.get(e.project_id)||null,recurrence:e.recurrence||{},notes:e.notes||'',metadata:e.metadata||{}}});
   const remoteMemory=(mem||[]).map(m=>({id:m.client_key||m.id,kind:m.kind,subject:m.subject,content:m.content,status:m.status,confidence:Number(m.confidence),source:m.source,metadata:m.metadata||{}}));
   const remoteMessages=await pullConversation();
   return {...local,tasks:remoteTasks,events:remoteEvents,memory:remoteMemory,messages:remoteMessages.length?remoteMessages:local.messages};
