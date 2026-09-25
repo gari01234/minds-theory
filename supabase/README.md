@@ -1,14 +1,51 @@
-# Supabase para MINDS - Theory
+# Supabase · MINDS - Theory v0.10
 
-Esta carpeta deja preparado el modelo de datos para la siguiente fase. No hace falta tocarla para publicar primero la web en GitHub Pages.
+El proyecto de producción ya existe en Supabase y la arquitectura de memoria v0.2 está aplicada mediante migraciones.
 
-Cuando el sitio ya esté en línea:
+## Estado actual
 
-1. Crear un proyecto nuevo en Supabase.
-2. Abrir **SQL Editor** y ejecutar `schema.sql` completo.
-3. Activar autenticación por email (Magic Link / OTP).
-4. Copiar la URL del proyecto y la **publishable key** del panel de Supabase. La publishable key puede usarse en el navegador porque las tablas están protegidas con Row Level Security; una secret/service-role key nunca debe ponerse en el frontend.
-5. En la siguiente versión conectaremos las anotaciones locales con la tabla `annotations`, el corpus con `documents`, la memoria temporal con `memory_events` y las piezas de PENSAMIENTO con `mind_dispatches`.
-6. El motor de PENSAMIENTO debe vivir en una Edge Function para que la clave del proveedor de IA permanezca en secretos del servidor y no en GitHub ni en el navegador.
+Migraciones aplicadas:
 
-El esquema conserva por separado documento, anotación, evento autobiográfico y pieza generada de pensamiento. Una anotación aumenta relevancia autobiográfica; no modifica ni sobrescribe la evidencia documental.
+- `minds_memory_architecture_v02`
+- `minds_memory_hardening_v021`
+- `minds_v010_persistence_support`
+- `minds_v010_message_idempotency`
+
+Las tablas principales son:
+
+- `documents`
+- `annotations`
+- `reading_state`
+- `mind_threads`
+- `mind_thread_versions`
+- `mind_thread_events`
+- `mind_annotations`
+- `conversations`
+- `conversation_messages`
+- `memory_events`
+- `memory_links`
+
+La capa futura de recuperación semántica vive en el esquema privado `minds_private`, actualmente con `memory_chunks`.
+
+## Seguridad
+
+Todas las tablas de usuario tienen Row Level Security. El navegador opera únicamente con la **publishable key** y una sesión autenticada. El esquema privado no tiene acceso para `anon` ni `authenticated`.
+
+Nunca deben exponerse en el frontend ni guardarse en GitHub:
+
+- service-role / secret keys;
+- contraseña de Postgres;
+- claves de proveedores de IA.
+
+## Auth
+
+v0.10 usa Magic Link por email.
+
+En Supabase Dashboard → Authentication → URL Configuration:
+
+- Site URL: `https://gari01234.github.io/minds-theory/`
+- Redirect URL permitida: `https://gari01234.github.io/minds-theory/**`
+
+## Nota sobre schema.sql
+
+El antiguo `schema.sql` v0.1 ya no representa la arquitectura actual y no debe ejecutarse sobre el proyecto de producción. La base real está gobernada por las migraciones anteriores. Se sustituirá por un snapshot reproducible cuando cerremos la fase v0.10.
