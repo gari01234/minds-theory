@@ -30,6 +30,7 @@
     syncing:false,
     hydrating:false,
     migrationPending:false,
+    bootstrapping:false,
     lastError:null,
     dirty:new Set(),
     syncTimer:null,
@@ -348,16 +349,22 @@
     for(const c of local){
       const remoteId=remoteUuid(c.id);
       const origin=c.origin||{type:'global',id:'global',label:'Pregunta global'};
-      const originKind=origin.type==='mind'?'mind':origin.type==='reading'?'reading':'global';
+      let originKind=origin.type==='mind'?'mind':origin.type==='reading'?'reading':'global';
+      let originThreadId=originKind==='mind'?state.threadsBySlug.get(origin.id)||null:null;
+      let originDocumentId=originKind==='reading'?resolveOriginDocument(origin):null;
+      // Older local conversations may not have a resolvable reading/thread id.
+      // Preserve them as global conversations while retaining the full original
+      // context in origin_anchor instead of dropping autobiographical memory.
+      if(originKind==='reading'&&!originDocumentId) originKind='global';
+      if(originKind==='mind'&&!originThreadId) originKind='global';
+      if(originKind==='global'){originThreadId=null;originDocumentId=null;}
       const row={
         id:remoteId,user_id:state.user.id,origin_kind:originKind,
-        origin_thread_id:originKind==='mind'?state.threadsBySlug.get(origin.id)||null:null,
-        origin_document_id:originKind==='reading'?resolveOriginDocument(origin):null,
+        origin_thread_id:originThreadId,
+        origin_document_id:originDocumentId,
         origin_anchor:origin,title:c.title||'Nueva conversación',mode:c.mode==='outside'?'outside':'memory',
         metadata:{local_id:c.id||null},created_at:c.created||now(),updated_at:c.updated||c.created||now()
       };
-      if(originKind==='reading'&&!row.origin_document_id) continue;
-      if(originKind==='mind'&&!row.origin_thread_id) continue;
       const {error}=await sb.from('conversations').upsert(row);if(error)throw error;
       const messages=(c.messages||[]).map((m,i)=>({
         user_id:state.user.id,conversation_id:remoteId,
@@ -529,6 +536,8 @@
 
   // ---------- session bootstrap ----------
   async function bootstrapUser(user){
+    if(state.bootstrapping)return;
+    state.bootstrapping=true;
     state.user=user;state.lastError=null;state.ready=false;state.migrationPending=false;updateStatus('syncing');
     try{
       await ensureStaticMemory();
@@ -552,6 +561,7 @@
       updateStatus();
       renderAuthDialog();
     }catch(err){setError(err);renderAuthDialog();}
+    finally{state.bootstrapping=false;}
   }
 
   async function handleSession(session){
