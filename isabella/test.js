@@ -1,1 +1,0 @@
-const x=localStorage.getItem('x'); const R=window.SpeechRecognition||window.webkitSpeechRecognition; console.log(x,R);
