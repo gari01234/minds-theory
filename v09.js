@@ -332,7 +332,27 @@
   setViewV091('mind');
 
   window.MINDS_V09={
-    get conversations(){return conversations},get annotations(){return mindAnnotations},get pins(){return [...pins]},
-    renderMinds:renderMindsV09,renderReadings:renderReadingsV09,openHistory,askFromOrigin,openArchive
+    get conversations(){return conversations},
+    get annotations(){return mindAnnotations},
+    get pins(){return [...pins]},
+    snapshot(){
+      return allThreadIds().map(id=>({
+        slug:id,
+        title:threadLongTitle(id),
+        description:threadMeta[id]?.why||'',
+        body:threadBody(id).map(b=>b.text).filter(Boolean).join('\n\n'),
+        active:isThreadActive(id),
+        pinned:pins.has(id),
+        epistemicStatus:id==='morris'?'deprioritized':id==='human-end'?'open':'provisional',
+        sources:[...(threadMeta[id]?.sources||[])],
+        connections:[...(threadMeta[id]?.connections||[])],
+        evolution:[...(evolution[id]||[])]
+      }));
+    },
+    renderMinds:renderMindsV09,
+    renderReadings:renderReadingsV09,
+    openHistory,
+    askFromOrigin,
+    openArchive
   };
 })();
