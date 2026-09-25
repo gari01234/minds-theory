@@ -11,7 +11,7 @@ const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&
 const base={screen:'assistant',view:'month',date:today(),messages:[],categories:[{id:'casa',name:'Casa'},{id:'trabajo',name:'Trabajo'},{id:'minds',name:'MINDS'},{id:'personal',name:'Personal'},{id:'architectures',name:'Architectures'}],projects:[{id:'bernried',categoryId:'trabajo',name:'Bernried'},{id:'schwarz',categoryId:'trabajo',name:'Schwarz'}],tasks:[],events:[],memory:[]};
 let state=load();
 function load(){try{return {...base,...JSON.parse(localStorage.getItem(KEY)||'{}')}}catch{return JSON.parse(JSON.stringify(base))}}
-function save(){try{localStorage.setItem(KEY,JSON.stringify(state))}catch{} renderToday();}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(state))}catch{} window.ISABELLA_STATE=state;try{window.dispatchEvent(new CustomEvent('isabella:state',{detail:JSON.parse(JSON.stringify(state))}))}catch{} renderToday();}
 function pretty(s,opt={weekday:'long',day:'numeric',month:'long'}){return fromIso(s).toLocaleDateString('es-ES',opt)}
 function cat(id){return state.categories.find(x=>x.id===id)?.name||''} function project(id){return state.projects.find(x=>x.id===id)?.name||''}
 function minutes(t){const[a,b]=t.split(':').map(Number);return a*60+b}
@@ -40,5 +40,16 @@ function tasksPanel(){modal('Tareas',state.tasks.length?state.tasks.map(t=>`<div
 function newPanel(){modal('Agregar manualmente',`<div class="form"><select id="newType"><option value="task">Tarea de día completo</option><option value="event">Evento</option></select><input id="newTitle" placeholder="Nombre"><input id="newDate" type="date" value="${today()}"><select id="newCat">${state.categories.map(c=>`<option value="${c.id}">${esc(c.name)}</option>`).join('')}</select><input id="newTime" type="time" value="09:00"><button id="newSave" class="primary">Guardar</button></div>`);$('#newSave').onclick=()=>{const title=$('#newTitle').value.trim();if(!title)return;const type=$('#newType').value,date=$('#newDate').value,categoryId=$('#newCat').value;if(type==='task')state.tasks.push({id:uid(),title,date,categoryId,done:false});else state.events.push({id:uid(),title,date,categoryId,start:$('#newTime').value||'09:00',duration:60});save();closeModal();say('assistant',`He agregado “${title}”.`);renderCalendar()}}
 function memoryPanel(){modal('Lo que Isabella sabe de mí',state.memory.length?state.memory.map(m=>`<div class="row"><div class="row-main">${esc(m)}</div></div>`).join(''):'<div class="small">Todavía no he guardado memoria personal en esta staging.</div>')}
 function categoriesPanel(){modal('Categorías y proyectos',`<div class="small">Categorías</div>${state.categories.map(c=>`<div class="row"><div class="row-main">${esc(c.name)}</div></div>`).join('')}<div class="small" style="margin-top:18px">Proyectos de Trabajo</div>${state.projects.map(p=>`<div class="row"><div class="row-main">${esc(p.name)}</div></div>`).join('')}`)}
+window.ISABELLA_APP={
+  getState:()=>JSON.parse(JSON.stringify(state)),
+  replaceState:(next)=>{state={...base,...next};save();renderMessages();renderToday();renderCalendar();show(state.screen||'assistant')},
+  addAssistantMessage:(text)=>say('assistant',text),
+  addUserMessage:(text)=>say('user',text),
+  refresh:()=>{renderMessages();renderToday();renderCalendar()},
+  openModal:modal,
+  closeModal,
+  show,
+  save
+};
 init();
 })();
